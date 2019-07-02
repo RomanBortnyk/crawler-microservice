@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -24,13 +25,33 @@ public class MongoQueryProvider implements QueryProvider {
     private final QueryRepository queryRepository;
     private final MongoQueryMapper mongoQueryMapper;
 
+    private boolean firstStartup = true;
+
     @Override
+    @Transactional
     public Optional<Query> getNextQuery() {
 
-        return queryRepository.findByQueryStatus(QueryStatus.PENDING)
-                .sorted(Comparator.comparing(MongoQuery::getCreatedAt))
-                .map(mongoQueryMapper::map)
-                .findFirst();
+        // check do we have interrupted queries like after application crash
+        if (firstStartup){
+            Optional<MongoQuery> runningQueryOpt = queryRepository.findByQueryStatus(QueryStatus.RUNNING)
+                    .findFirst();
+            if (runningQueryOpt.isPresent()){
+                return runningQueryOpt.map(mongoQueryMapper::map);
+            }
+            firstStartup = false;
+        }
+
+        Optional<MongoQuery> oldestPendingQueryOptional = queryRepository.findByQueryStatus(QueryStatus.PENDING)
+                .min(Comparator.comparing(MongoQuery::getCreatedAt));
+
+        if (oldestPendingQueryOptional.isPresent()){
+            MongoQuery mongoQuery = oldestPendingQueryOptional.get();
+            mongoQuery.setQueryStatus(QueryStatus.RUNNING);
+            queryRepository.save(mongoQuery);
+        }
+
+        return oldestPendingQueryOptional
+                .map(mongoQueryMapper::map);
     }
 
     @Override
@@ -42,7 +63,7 @@ public class MongoQueryProvider implements QueryProvider {
 
     @Override
     @Transactional
-    public boolean addToQueue(core.Query query) {
+    public boolean addToQueue(Query query) {
 
         checkQueryAlreadyRunning(query);
 

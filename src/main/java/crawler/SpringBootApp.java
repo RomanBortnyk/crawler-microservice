@@ -23,13 +23,13 @@ public class SpringBootApp {
 
         ApplicationContext ctx = SpringApplication.run(SpringBootApp.class, args);
 
-        QueryProvider bean = ctx.getBean(QueryProvider.class);
-
-        Map<String, String> map = new HashMap<>();
-        map.put("url", "https://spring.io/projects");
-        Query query = new Query("spring", Collections.<String>emptyList(), map);
-
-        bean.addToQueue(query);
+//        QueryProvider bean = ctx.getBean(QueryProvider.class);
+//
+//        Map<String, String> map = new HashMap<>();
+//        map.put("url", "https://spring.io/projects");
+//        Query query = new Query("spring", Collections.<String>emptyList(), map);
+//
+//        bean.addToQueue(query);
 
     }
 
