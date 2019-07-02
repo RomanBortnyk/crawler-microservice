@@ -51,12 +51,10 @@ public class CrawlerService {
     }
 
     /**
-     * Starts passed query if no queries are running
-     *
-     * @param query query to start
-     * @return true if query was started immediately, otherwise query was added to queue
+     * Starts passed query immediately, otherwise adds to queue
+     * Rejects query if it already running or present in queue
      */
-    public synchronized void startQuery() {
+    public void startQuery() {
 
         boolean atLeastOneQueryIsRunning = !runningQueries.isEmpty();
 

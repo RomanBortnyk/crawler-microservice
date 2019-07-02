@@ -37,14 +37,7 @@ public class MongoQueryProvider implements QueryProvider {
     @Transactional
     public boolean containsQuery(Query query) {
         Optional<MongoQuery> mongoQueryOpt = queryRepository.findById(query.getId());
-
-        if (mongoQueryOpt.isPresent()){
-            QueryStatus queryStatus = mongoQueryOpt.get().getQueryStatus();
-            return queryStatus == QueryStatus.RUNNING ||
-                    queryStatus == QueryStatus.PENDING;
-        }
-
-        return false;
+        return mongoQueryOpt.filter(mongoQuery -> mongoQuery.getQueryStatus() == QueryStatus.PENDING).isPresent();
     }
 
     @Override

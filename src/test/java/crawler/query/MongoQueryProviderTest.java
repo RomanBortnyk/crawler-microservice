@@ -43,8 +43,8 @@ public class MongoQueryProviderTest {
 
     }
 
-    @Test(expected = RunningQueryException.class)
-    public void shouldThrowException__WhenQueryPresentAsRunning() {
+    @Test
+    public void shouldNotThrowException__WhenQueryPresentAsRunning() {
         Optional<MongoQuery> mongoQueryOptional = Optional.of(new MongoQuery(query, QueryStatus.RUNNING, LocalDateTime.now()));
         when(queryRepository.findById(Mockito.anyString())).thenReturn(mongoQueryOptional);
 
