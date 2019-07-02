@@ -1,5 +1,6 @@
-package core.proxy;
+package crawler.proxy;
 
+import core.proxy.ProxyAddress;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 

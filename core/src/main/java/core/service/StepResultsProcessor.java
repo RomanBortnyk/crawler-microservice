@@ -1,7 +1,7 @@
 package core.service;
 
-import core.ProxySelector;
 import core.model.BaseEntry;
+import core.proxy.ProxyProvider;
 import core.step.BaseStep;
 import core.step.Step;
 import core.step.WebRequestStep;
@@ -11,8 +11,6 @@ import core.step.result.ExecutionResult;
 import core.step.result.WebRequestStepExecutionResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -31,7 +29,7 @@ public class StepResultsProcessor {
     private final ExecutorService stepsProcessorPool = Executors.newFixedThreadPool(1);
 
     private final CrawlerService crawlerService;
-    private final ProxySelector proxySelector;
+    private final ProxyProvider proxyProvider;
 
     @PostConstruct
     public void initialize() {
@@ -108,7 +106,7 @@ public class StepResultsProcessor {
             return;
         }
 
-        webRequestStep.setProxyAddress(proxySelector.getRandomProxy());
+        webRequestStep.setProxyAddress(proxyProvider.getNextProxy());
 
         WebRequestStepProxy webRequestStepProxy = new WebRequestStepProxy(webRequestStep.getQuery(), webRequestStep);
         crawlerService.getStepsCompletionService().submit(webRequestStepProxy, webRequestStepProxy.getExecutionResult());
