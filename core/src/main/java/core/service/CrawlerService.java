@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -130,12 +131,16 @@ public class CrawlerService {
         return stepsExecutor;
     }
 
-    public Map<String, Set<String>> getSuccessfulRequestedUrls() {
-        return successfulRequestedUrls;
+    public Set<String> getSuccessfulRequestedUrls(String queryId) {
+        return successfulRequestedUrls.get(queryId);
     }
 
-    public CompletionService<ExecutionResult> getStepsCompletionService() {
-        return stepsCompletionService;
+    public void submitStep(Runnable step, ExecutionResult executionResult){
+        stepsCompletionService.submit(step, executionResult);
+    }
+
+    public Future<ExecutionResult> takeStep() throws InterruptedException{
+         return stepsCompletionService.take();
     }
 
     @PreDestroy

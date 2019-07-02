@@ -43,7 +43,7 @@ public class StepResultsProcessor {
             while (!crawlerService.getStepsExecutor().isShutdown()) {
 
                 try {
-                    Future<ExecutionResult> stepResultFuture = crawlerService.getStepsCompletionService().take();
+                    Future<ExecutionResult> stepResultFuture = crawlerService.takeStep();
 
                     if (crawlerService.ignoreStepsResults()) {
                         log.info("Step result was ignored due to query cancellation");
@@ -61,7 +61,7 @@ public class StepResultsProcessor {
     private void processExecutionResult(ExecutionResult execResult) {
 
         String queryId = execResult.getQuery().getId();
-        Set<String> successfulRequestedUrls = crawlerService.getSuccessfulRequestedUrls().get(queryId);
+        Set<String> successfulRequestedUrls = crawlerService.getSuccessfulRequestedUrls(queryId);
 
         for (Step nextStep : execResult.getNextSteps()) {
 
@@ -71,7 +71,7 @@ public class StepResultsProcessor {
 
             if (nextStep instanceof BaseStep) {
                 ((BaseStep) nextStep).incrementPriority();
-                crawlerService.getStepsCompletionService().submit(nextStep, nextStep.getExecutionResult());
+                crawlerService.submitStep(nextStep, nextStep.getExecutionResult());
             }
 
         }
@@ -109,6 +109,6 @@ public class StepResultsProcessor {
         webRequestStep.setProxyAddress(proxyProvider.getNextProxy());
 
         WebRequestStepProxy webRequestStepProxy = new WebRequestStepProxy(webRequestStep.getQuery(), webRequestStep);
-        crawlerService.getStepsCompletionService().submit(webRequestStepProxy, webRequestStepProxy.getExecutionResult());
+        crawlerService.submitStep(webRequestStepProxy, webRequestStepProxy.getExecutionResult());
     }
 }
