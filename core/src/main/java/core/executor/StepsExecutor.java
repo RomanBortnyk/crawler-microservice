@@ -1,0 +1,45 @@
+package core.executor;
+
+import core.PriorityStepComparator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+public class StepsExecutor extends ThreadPoolExecutor {
+
+    private static final Logger log = LoggerFactory.getLogger(StepsExecutor.class);
+
+    private static final int KEEP_ALIVE_TIME = 1;
+    private static final TimeUnit TIME_UNIT = TimeUnit.MINUTES;
+    private static final double BLOCKING_COEFFICIENT = 0.89;
+    private static final int INITIAL_QUEUE_CAPACITY = 40;
+    private static final int EFFECTIVE_NUMBER_OF_THREADS = determineNumberOfThreads();
+
+    public StepsExecutor() {
+        super(EFFECTIVE_NUMBER_OF_THREADS, EFFECTIVE_NUMBER_OF_THREADS, KEEP_ALIVE_TIME, TIME_UNIT,
+                new PriorityBlockingQueue<>(INITIAL_QUEUE_CAPACITY, new PriorityStepComparator())
+        );
+    }
+
+    private static int determineNumberOfThreads() {
+        int n = (int) (Runtime.getRuntime().availableProcessors() / (1 - BLOCKING_COEFFICIENT));
+        log.info("Calculated number of threads: " + n);
+        return n;
+    }
+
+    @Override
+    protected void afterExecute(Runnable r, Throwable t) {
+        super.afterExecute(r, t);
+
+        if (t != null) {
+            log.error("Step " + r + " was executed with exception " + t.getMessage());
+        }
+    }
+
+    public int getRunningStepsCount() {
+        return this.getActiveCount();
+    }
+}
