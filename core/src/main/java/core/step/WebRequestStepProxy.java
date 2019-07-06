@@ -1,6 +1,5 @@
 package core.step;
 
-import core.Query;
 import core.WebRequestSettings;
 import core.proxy.ProxyAddress;
 import core.step.result.ExecutionResult;
@@ -76,8 +75,7 @@ public class WebRequestStepProxy extends AbstractParsingStep {
         try {
 
             Connection connection = Jsoup.connect(webRequestSettings.getUrl())
-//                    .proxy(proxyAddress.getIpAddress(), proxyAddress.getPort())
-                    ;
+                    .proxy(proxyAddress.getIpAddress(), proxyAddress.getPort());
 
             webRequestSettings.getRequestHeader()
                     .forEach(connection::header);

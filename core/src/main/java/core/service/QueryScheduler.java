@@ -1,7 +1,6 @@
 package core.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +10,7 @@ public class QueryScheduler {
 
     private final QueryService queryService;
 
-    @Scheduled(cron = "0/10 * * * * *")
+    @Scheduled(cron = "${scheduling.service.query.check}")
     public void scheduleNewQueryCheck() {
         queryService.startQuery();
     }

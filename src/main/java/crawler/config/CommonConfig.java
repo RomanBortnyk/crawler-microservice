@@ -6,7 +6,7 @@ import core.executor.StepsExecutor;
 import core.model.BaseEntry;
 import core.model.Entry;
 import core.service.EntriesPersistenceService;
-import crawler.parsers.spring.model.Article;
+import crawler.parsers.spring.dto.Article;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;

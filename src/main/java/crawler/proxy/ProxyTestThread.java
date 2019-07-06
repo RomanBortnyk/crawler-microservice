@@ -27,7 +27,7 @@ public class ProxyTestThread implements Runnable {
     @Override
     public void run() {
 
-        final int timeout = 10000;
+        final int timeout = 8000;
 
             String url = "https://www.amazon.com/GE-RPWFE-Refrigerator-Water-Filter/dp/B009PCI2JU/ref=zg_bs_appliances_1?_encoding=UTF8&psc=1&refRID=QJSZDA9S1RPX36J68THY";
             String referer = "https://www.amazon.com/Best-Sellers-Appliances/zgbs/appliances/ref=zg_bs_nav_0";

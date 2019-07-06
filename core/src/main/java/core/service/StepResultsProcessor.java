@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -62,13 +61,12 @@ public class StepResultsProcessor {
 
     private void processExecutionResult(ExecutionResult execResult) {
 
-        String queryId = execResult.getQuery().getId();
-        Set<String> successfulRequestedUrls = queryService.getSuccessfulRequestedUrls(queryId);
+        final String queryId = execResult.getQuery().getId();
 
         for (Step nextStep : execResult.getNextSteps()) {
 
             if (nextStep instanceof WebRequestStep) {
-                handleWebRequestStep((WebRequestStep) nextStep, successfulRequestedUrls);
+                handleWebRequestStep((WebRequestStep) nextStep, queryId);
             }
 
             if (nextStep instanceof BaseStep) {
@@ -81,16 +79,12 @@ public class StepResultsProcessor {
         if (execResult instanceof WebRequestStepExecutionResult) {
             String successfulRequestedUrl = ((WebRequestStepExecutionResult) execResult).getSuccessfulRequestUrl();
             Optional.ofNullable(successfulRequestedUrl)
-                    .ifPresent(successfulRequestedUrls::add);
+                    .ifPresent(u -> queryService.addUrlAsSuccessfullyRequested(queryId, u));
         }
 
         if (execResult instanceof BaseStepExecutionResult) {
-            List<BaseEntry> products = ((BaseStepExecutionResult) execResult).getEntries();
-
-            if (!products.isEmpty()) {
-                List<BaseEntry> queryResults = queryService.getQueryResults(queryId);
-                queryResults.addAll(products);
-            }
+            List<BaseEntry> entries = ((BaseStepExecutionResult) execResult).getEntries();
+            queryService.addQueryResults(queryId, entries);
         }
     }
 
@@ -99,11 +93,11 @@ public class StepResultsProcessor {
      * Ignores step if url was successfully requested before, otherwise
      * wrap step in proxy and pass to executor
      */
-    private void handleWebRequestStep(WebRequestStep webRequestStep, Set<String> successfulRequestedUrls) {
+    private void handleWebRequestStep(WebRequestStep webRequestStep, String queryId) {
 
         String url = webRequestStep.getWebRequestSettings().getUrl();
 
-        if (successfulRequestedUrls.contains(url)) {
+        if (queryService.containsUrlAsSuccessfullyRequested(queryId, url)) {
             log.info("Duplicated request was ignored: " + url);
             return;
         }

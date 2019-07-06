@@ -3,7 +3,7 @@ package crawler.parsers.spring;
 import core.Query;
 import core.model.BaseEntry;
 import core.step.BaseStep;
-import crawler.parsers.spring.model.Article;
+import crawler.parsers.spring.dto.Article;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -26,7 +26,7 @@ public class SpringProjectsPage extends BaseStep {
         List<BaseEntry<Article>> collect = document.select("div.project--title").stream()
                 .map(Element::text)
                 .map(Article::new)
-                .map( a-> new BaseEntry<>(getQuery(), a))
+                .map(a -> new BaseEntry<>(getQuery(), a))
                 .collect(Collectors.toList());
 
         getExecutionResult().getEntries().addAll(collect);

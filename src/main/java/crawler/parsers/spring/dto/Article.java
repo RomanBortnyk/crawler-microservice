@@ -1,4 +1,4 @@
-package crawler.parsers.spring.model;
+package crawler.parsers.spring.dto;
 
 import lombok.Setter;
 import lombok.ToString;

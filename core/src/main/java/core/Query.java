@@ -23,6 +23,13 @@ public class Query {
         this.parserName = parserName;
     }
 
+    public String getParam(String param) {
+        if (parameters != null) {
+            return parameters.get(param);
+        }
+        return null;
+    }
+
     public boolean containsMode(String mode) {
         return modes.contains(mode);
     }

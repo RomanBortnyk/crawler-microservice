@@ -104,11 +104,16 @@ public class QueryService {
         return runningQueries;
     }
 
-    public List<BaseEntry> getQueryResults(String queryId) {
-        return queriesResults.get(queryId);
+    public boolean containsUrlAsSuccessfullyRequested(String queryId, String url) {
+        return successfulRequestedUrls.get(queryId).contains(url);
     }
 
-    public Set<String> getSuccessfulRequestedUrls(String queryId) {
-        return successfulRequestedUrls.get(queryId);
+    public boolean addUrlAsSuccessfullyRequested(String queryId, String url) {
+        return successfulRequestedUrls.get(queryId).contains(url);
     }
+
+    public void addQueryResults(String queryId, List<BaseEntry> entries) {
+        queriesResults.get(queryId).addAll(entries);
+    }
+
 }
