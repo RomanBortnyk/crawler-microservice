@@ -7,14 +7,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CrawlerScheduler {
+public class QueryScheduler {
 
-    private final CrawlerService crawlerService;
+    private final QueryService queryService;
 
     @Scheduled(cron = "0/10 * * * * *")
-    public void scheduleFixedDelayTask() {
-
-        crawlerService.startQuery();
+    public void scheduleNewQueryCheck() {
+        queryService.startQuery();
     }
 
 }

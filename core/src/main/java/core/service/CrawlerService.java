@@ -8,6 +8,7 @@ import core.model.BaseEntry;
 import core.step.Step;
 import core.step.result.ExecutionResult;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
@@ -28,115 +29,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Service
 public class CrawlerService {
 
+    private StepsProvider stepsProvider;
     private final StepsExecutor stepsExecutor;
     private final CompletionService<ExecutionResult> stepsCompletionService;
-    private final EntriesPersistenceService persistenceService;
-    private final StartupParserClassesContainer startupParserClassesContainer;
 
-    private Map<String, Query> runningQueries = new ConcurrentHashMap<>();
-    private Map<String, List<BaseEntry>> queriesResults = new ConcurrentHashMap<>();
-    private Map<String, Set<String>> successfulRequestedUrls = new ConcurrentHashMap<>();
     private AtomicBoolean ignoreStepsResults = new AtomicBoolean();
 
-    private QueryProvider queryProvider;
-
-    public CrawlerService(EntriesPersistenceService persistenceService,
-                          StepsExecutor stepsExecutor,
-                          StartupParserClassesContainer startupParserClassesContainer,
-                          QueryProvider queryProvider) {
-        this.persistenceService = persistenceService;
+    public CrawlerService(StepsExecutor stepsExecutor,
+                          StepsProvider stepsProvider) {
         this.stepsExecutor = stepsExecutor;
         this.stepsCompletionService = new ExecutorCompletionService<>(stepsExecutor);
-        this.startupParserClassesContainer = startupParserClassesContainer;
-        this.queryProvider = queryProvider;
-    }
-
-    /**
-     * Starts passed query immediately, otherwise adds to queue
-     * Rejects query if it already running or present in queue
-     */
-    public void startQuery() {
-
-        boolean atLeastOneQueryIsRunning = !runningQueries.isEmpty();
-
-        if (atLeastOneQueryIsRunning) {
-            return;
-        }
-
-        Optional<Query> queryOpt = queryProvider.getNextQuery();
-        if (!queryOpt.isPresent()) return;
-
-        Query query = queryOpt.get();
-
-        Optional<Class<?>> startupClassOptional = startupParserClassesContainer.getStartupClass(query.getParserName());
-
-        if (!startupClassOptional.isPresent()) {
-            log.info("Could not find parser with name: {}", query.getParserName());
-            return;
-        }
-
-        try {
-            Constructor<?> constructor = startupClassOptional.get().getConstructor(Query.class);
-            Object startupStep = constructor.newInstance(query);
-
-            if (startupStep instanceof Step) {
-                Step casted = (Step) startupStep;
-                prepareQuerySupportCollections(query);
-                stepsCompletionService.submit(casted, casted.getExecutionResult());
-                log.info(query.toString() + " was started");
-
-            } else {
-                log.info("Created instance is not of type Step");
-            }
-
-        } catch (Exception e) {
-            log.info("Could not create instance of startup class. Reason: " + e.getCause());
-        }
-    }
-
-    private void prepareQuerySupportCollections(Query query) {
-        runningQueries.put(query.getId(), query);
-        queriesResults.put(query.getId(), new ArrayList<>());
-        successfulRequestedUrls.put(query.getId(), new HashSet<>());
-    }
-
-    void finishQuery(Query query) {
-
-        log.info("Finishing query {}", query);
-
-        List<BaseEntry> results = queriesResults.get(query.getId());
-        log.info("Sent {} results to persistence service", results.size());
-        persistenceService.persistResults(results);
-
-        queryProvider.removeQueryFromQueue(query.getId());
-
-        cleanQuerySupportCollections(query);
-    }
-
-    private void cleanQuerySupportCollections(Query query) {
-        runningQueries.remove(query.getId());
-        queriesResults.remove(query.getId());
-        successfulRequestedUrls.remove(query.getId());
-    }
-
-    public List<BaseEntry> getQueryResults(String queryId) {
-        return queriesResults.get(queryId);
-    }
-
-    public Map<String, Query> getRunningQueries() {
-        return runningQueries;
+        this.stepsProvider = stepsProvider;
     }
 
     StepsExecutor getStepsExecutor() {
         return stepsExecutor;
-    }
-
-    public Set<String> getSuccessfulRequestedUrls(String queryId) {
-        return successfulRequestedUrls.get(queryId);
-    }
-
-    public void submitStep(Runnable step, ExecutionResult executionResult){
-        stepsCompletionService.submit(step, executionResult);
     }
 
     public Future<ExecutionResult> takeStep() throws InterruptedException{
@@ -148,42 +55,52 @@ public class CrawlerService {
         stepsExecutor.shutdownNow();
     }
 
+    // 10 seconds
+    @Scheduled(fixedRate = 10000)
+    public void pollSteps(){
 
+        stepsProvider.getSteps()
+                .forEach(pair -> stepsCompletionService.submit(pair.getKey(), pair.getValue()));
+
+    }
+
+
+    // todo implement removing of running query
     /**
      * Removes query by id from from active execution
      * Ignores steps related to removed query
      *
      * @param queryId query id to remove
      */
-    private synchronized void stopAndRemoveQuery(String queryId) {
-
-        if (!runningQueries.containsKey(queryId)) {
-            log.info("Tried to stop not running query with id {}", queryId);
-            return;
-        }
-
-        ignoreStepsResults.set(true);
-        stepsExecutor.getQueue().clear();
-
-        try {
-
-            while (stepsExecutor.getRunningStepsCount() != 0) {
-                Thread.sleep(1000);
-            }
-
-            runningQueries.remove(queryId);
-            queriesResults.remove(queryId);
-            successfulRequestedUrls.remove(queryId);
-
-            log.info("Query with id {} was removed from execution", queryId);
-
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
-        }
-
-        ignoreStepsResults.set(false);
-
-    }
+//    private synchronized void stopAndRemoveQuery(String queryId) {
+//
+//        if (!runningQueries.containsKey(queryId)) {
+//            log.info("Tried to stop not running query with id {}", queryId);
+//            return;
+//        }
+//
+//        ignoreStepsResults.set(true);
+//        stepsExecutor.getQueue().clear();
+//
+//        try {
+//
+//            while (stepsExecutor.getRunningStepsCount() != 0) {
+//                Thread.sleep(1000);
+//            }
+//
+//            runningQueries.remove(queryId);
+//            queriesResults.remove(queryId);
+//            successfulRequestedUrls.remove(queryId);
+//
+//            log.info("Query with id {} was removed from execution", queryId);
+//
+//        } catch (InterruptedException e) {
+//            log.error(e.getMessage());
+//        }
+//
+//        ignoreStepsResults.set(false);
+//
+//    }
 
 
     boolean ignoreStepsResults() {

@@ -18,8 +18,8 @@ public class WebRequestStepProxy extends AbstractParsingStep {
     private static final int DEFAULT_CONNECTION_TIMEOUT = 20000;
     private final WebRequestStep webRequestStep;
 
-    public WebRequestStepProxy(Query query, WebRequestStep webRequestStep) {
-        super(query);
+    public WebRequestStepProxy(WebRequestStep webRequestStep) {
+        super(webRequestStep.getQuery());
         this.webRequestStep = webRequestStep;
     }
 

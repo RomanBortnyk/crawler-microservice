@@ -30,6 +30,8 @@ public class StepResultsProcessor {
 
     private final CrawlerService crawlerService;
     private final ProxyProvider proxyProvider;
+    private final QueryService queryService;
+    private final StepsProvider stepsProvider;
 
     @PostConstruct
     public void initialize() {
@@ -61,7 +63,7 @@ public class StepResultsProcessor {
     private void processExecutionResult(ExecutionResult execResult) {
 
         String queryId = execResult.getQuery().getId();
-        Set<String> successfulRequestedUrls = crawlerService.getSuccessfulRequestedUrls(queryId);
+        Set<String> successfulRequestedUrls = queryService.getSuccessfulRequestedUrls(queryId);
 
         for (Step nextStep : execResult.getNextSteps()) {
 
@@ -71,7 +73,7 @@ public class StepResultsProcessor {
 
             if (nextStep instanceof BaseStep) {
                 ((BaseStep) nextStep).incrementPriority();
-                crawlerService.submitStep(nextStep, nextStep.getExecutionResult());
+                stepsProvider.addNewStep(nextStep, nextStep.getExecutionResult());
             }
 
         }
@@ -86,7 +88,7 @@ public class StepResultsProcessor {
             List<BaseEntry> products = ((BaseStepExecutionResult) execResult).getEntries();
 
             if (!products.isEmpty()) {
-                List<BaseEntry> queryResults = crawlerService.getQueryResults(queryId);
+                List<BaseEntry> queryResults = queryService.getQueryResults(queryId);
                 queryResults.addAll(products);
             }
         }
@@ -108,7 +110,7 @@ public class StepResultsProcessor {
 
         webRequestStep.setProxyAddress(proxyProvider.getNextProxy());
 
-        WebRequestStepProxy webRequestStepProxy = new WebRequestStepProxy(webRequestStep.getQuery(), webRequestStep);
-        crawlerService.submitStep(webRequestStepProxy, webRequestStepProxy.getExecutionResult());
+        WebRequestStepProxy webRequestStepProxy = new WebRequestStepProxy(webRequestStep);
+        stepsProvider.addNewStep(webRequestStepProxy, webRequestStepProxy.getExecutionResult());
     }
 }

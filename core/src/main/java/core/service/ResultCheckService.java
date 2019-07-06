@@ -13,6 +13,7 @@ public class ResultCheckService {
 
     private static final Logger log = LoggerFactory.getLogger(ResultCheckService.class);
     private final CrawlerService crawlerService;
+    private final QueryService queryService;
 
     @Scheduled(initialDelay = 5000, fixedRate = 15000)
     public void resultCheck() {
@@ -28,13 +29,13 @@ public class ResultCheckService {
             log.info(String.format("Result check: %d (steps in queue)/%d (running steps)", stepsQueueSize, runningStepsCount));
         }
 
-        boolean runningQueriesPresent = !crawlerService.getRunningQueries().isEmpty();
+        boolean runningQueriesPresent = !queryService.getRunningQueries().isEmpty();
 
         if (runningQueriesPresent && !anyStepsLeft) {
 
             // currently service can execute only one query,
             // running queries map is for feature when multiple queries can be executed
-            crawlerService.getRunningQueries().values().forEach(crawlerService::finishQuery);
+            queryService.getRunningQueries().values().forEach(queryService::finishQuery);
         }
     }
 }
