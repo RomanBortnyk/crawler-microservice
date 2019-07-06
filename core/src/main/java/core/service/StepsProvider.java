@@ -13,4 +13,5 @@ public interface StepsProvider {
 
     List<Pair<Runnable, ExecutionResult>> getSteps();
 
+//    boolean isEmpty();
 }

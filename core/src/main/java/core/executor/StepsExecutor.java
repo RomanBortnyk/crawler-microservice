@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class StepsExecutor extends ThreadPoolExecutor {
 
@@ -17,6 +18,7 @@ public class StepsExecutor extends ThreadPoolExecutor {
     private static final double BLOCKING_COEFFICIENT = 0.89;
     private static final int INITIAL_QUEUE_CAPACITY = 40;
     private static final int EFFECTIVE_NUMBER_OF_THREADS = determineNumberOfThreads();
+    private AtomicInteger runningStepsCount = new AtomicInteger(0);
 
     public StepsExecutor() {
         super(EFFECTIVE_NUMBER_OF_THREADS, EFFECTIVE_NUMBER_OF_THREADS, KEEP_ALIVE_TIME, TIME_UNIT,
@@ -30,9 +32,18 @@ public class StepsExecutor extends ThreadPoolExecutor {
         return n;
     }
 
+
+    @Override
+    protected void beforeExecute(Thread t, Runnable r) {
+        super.beforeExecute(t, r);
+        runningStepsCount.incrementAndGet();
+    }
+
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
         super.afterExecute(r, t);
+
+        runningStepsCount.decrementAndGet();
 
         if (t != null) {
             log.error("Step " + r + " was executed with exception " + t.getMessage());
@@ -40,6 +51,6 @@ public class StepsExecutor extends ThreadPoolExecutor {
     }
 
     public int getRunningStepsCount() {
-        return this.getActiveCount();
+        return runningStepsCount.intValue();
     }
 }

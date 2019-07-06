@@ -1,26 +1,14 @@
 package core.service;
 
-import core.Query;
-import core.QueryProvider;
-import core.annotation.processor.StartupParserClassesContainer;
 import core.executor.StepsExecutor;
-import core.model.BaseEntry;
-import core.step.Step;
 import core.step.result.ExecutionResult;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletionService;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,6 +22,7 @@ public class CrawlerService {
     private final CompletionService<ExecutionResult> stepsCompletionService;
 
     private AtomicBoolean ignoreStepsResults = new AtomicBoolean();
+//    private AtomicBoolean requestingSteps = new AtomicBoolean(false);
 
     public CrawlerService(StepsExecutor stepsExecutor,
                           StepsProvider stepsProvider) {
@@ -56,12 +45,13 @@ public class CrawlerService {
     }
 
     // 10 seconds
-    @Scheduled(fixedRate = 10000)
-    public void pollSteps(){
-
-        stepsProvider.getSteps()
-                .forEach(pair -> stepsCompletionService.submit(pair.getKey(), pair.getValue()));
-
+//    @Scheduled(fixedRate = 10000)
+    public int pollSteps() {
+//        requestingSteps.set(true);
+        List<Pair<Runnable, ExecutionResult>> nextSteps = stepsProvider.getSteps();
+        nextSteps.forEach(pair -> stepsCompletionService.submit(pair.getKey(), pair.getValue()));
+//        requestingSteps.set(false);
+        return nextSteps.size();
     }
 
 
@@ -106,4 +96,8 @@ public class CrawlerService {
     boolean ignoreStepsResults() {
         return ignoreStepsResults.get();
     }
+
+//    public boolean requestingSteps() {
+//        return requestingSteps.get();
+//    }
 }

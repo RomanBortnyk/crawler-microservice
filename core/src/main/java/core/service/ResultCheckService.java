@@ -15,23 +15,29 @@ public class ResultCheckService {
     private final CrawlerService crawlerService;
     private final QueryService queryService;
 
-    @Scheduled(initialDelay = 5000, fixedRate = 15000)
+    @Scheduled(cron = "${scheduling.service.result.check}")
     public void resultCheck() {
+
+        final int receivedNextSteps = crawlerService.pollSteps();
 
         StepsExecutor executorService = crawlerService.getStepsExecutor();
 
-        final int stepsQueueSize = executorService.getQueue().size();
-        final int runningStepsCount = executorService.getRunningStepsCount();
-
-        boolean anyStepsLeft = runningStepsCount != 0 || stepsQueueSize != 0;
+        boolean anyStepsLeft = executorService.getRunningStepsCount() != 0
+                || receivedNextSteps != 0;
 
         if (anyStepsLeft) {
-            log.info(String.format("Result check: %d (steps in queue)/%d (running steps)", stepsQueueSize, runningStepsCount));
+            log.info(String.format(
+                    "Received %d steps from steps provider : %d steps in queue",
+                    receivedNextSteps,
+                    executorService.getQueue().size()
+                    )
+            );
+            return;
         }
 
         boolean runningQueriesPresent = !queryService.getRunningQueries().isEmpty();
 
-        if (runningQueriesPresent && !anyStepsLeft) {
+        if (runningQueriesPresent) {
 
             // currently service can execute only one query,
             // running queries map is for feature when multiple queries can be executed
