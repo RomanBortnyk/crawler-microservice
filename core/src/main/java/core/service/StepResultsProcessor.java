@@ -61,7 +61,7 @@ public class StepResultsProcessor {
 
     private void processExecutionResult(ExecutionResult execResult) {
 
-        final String queryId = execResult.getQuery().getId();
+        final String queryId = execResult.getStep().getQuery().getId();
 
         for (Step nextStep : execResult.getNextSteps()) {
 
@@ -86,6 +86,8 @@ public class StepResultsProcessor {
             List<BaseEntry> entries = ((BaseStepExecutionResult) execResult).getEntries();
             queryService.addQueryResults(queryId, entries);
         }
+
+        stepsProvider.completeStep(execResult.getStep());
     }
 
     /**

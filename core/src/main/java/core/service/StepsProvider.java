@@ -1,5 +1,6 @@
 package core.service;
 
+import core.step.Step;
 import core.step.result.ExecutionResult;
 import javafx.util.Pair;
 
@@ -7,11 +8,14 @@ import java.util.List;
 
 public interface StepsProvider {
 
-    void addNewStep(Runnable step, ExecutionResult executionResult);
+    void addNewStep(Step step, ExecutionResult executionResult);
 
-    void completeStep(String stepId);
+    void completeStep(Step step);
 
-    List<Pair<Runnable, ExecutionResult>> getSteps();
+    List<Pair<Step, ExecutionResult>> getSteps();
 
-//    boolean isEmpty();
+    boolean anyStepsLeft();
+
+    void resetStepsContainers();
+
 }

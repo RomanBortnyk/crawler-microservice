@@ -1,6 +1,6 @@
 package core.step.result;
 
-import core.Query;
+import core.step.Step;
 import lombok.Getter;
 
 @Getter
@@ -8,8 +8,8 @@ public class WebRequestStepExecutionResult extends ExecutionResultImpl {
 
     private String successfulRequestUrl;
 
-    public WebRequestStepExecutionResult(Query query) {
-        super(query);
+    public WebRequestStepExecutionResult(Step step) {
+        super(step);
     }
 
     public void setSuccessfulRequestUrl(String successfulRequestUrl) {

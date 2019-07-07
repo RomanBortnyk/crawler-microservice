@@ -32,7 +32,7 @@ public abstract class WebRequestStep extends AbstractParsingStep {
     public WebRequestStep(Query query, WebRequestSettings webRequestSettings) {
         super(query);
         this.webRequestSettings = webRequestSettings;
-        executionResult = new WebRequestStepExecutionResult(query);
+        executionResult = new WebRequestStepExecutionResult(this);
     }
 
     public void setSuccessfulRequestUrl(String url) {

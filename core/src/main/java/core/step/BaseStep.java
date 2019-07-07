@@ -11,7 +11,7 @@ public abstract class BaseStep extends AbstractParsingStep {
 
     public BaseStep(Query query) {
         super(query);
-        this.executionResult = new BaseStepExecutionResult(query);
+        this.executionResult = new BaseStepExecutionResult(this);
     }
 
 }

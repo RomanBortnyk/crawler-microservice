@@ -1,7 +1,7 @@
 package core.step.result;
 
-import core.Query;
 import core.model.BaseEntry;
+import core.step.Step;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -12,8 +12,8 @@ public class BaseStepExecutionResult extends ExecutionResultImpl {
 
     private final List<BaseEntry> entries;
 
-    public BaseStepExecutionResult(Query query) {
-        super(query);
+    public BaseStepExecutionResult(Step step) {
+        super(step);
         entries = new ArrayList<>(2);
     }
 

@@ -465,7 +465,9 @@ public class AmazonProductStep extends BaseStep {
             product.setRestFbt(StringUtils.join(restFbts, ", "));
         }
 
-        for (int i = 1; i <= resultFbtLinks.size(); i++) {
+        for (int i = 0; i < resultFbtLinks.size(); i++) {
+
+            int fbtNumber = i + 1;
 
             String fbtLink = resultFbtLinks.get(i);
             String fbtAsin = extractAsinFromPageUriStr(fbtLink);
@@ -475,7 +477,7 @@ public class AmazonProductStep extends BaseStep {
                 Product partialProduct = new Product();
 
                 partialProduct.setAsin(fbtAsin);
-                partialProduct.setFbtNumber(i);
+                partialProduct.setFbtNumber(fbtNumber);
                 partialProduct.setParentAsin(parentAsin);
                 partialProduct.setIsFbt(true);
 
@@ -485,7 +487,7 @@ public class AmazonProductStep extends BaseStep {
 
                 AmazonHelper amazonHelper = new AmazonHelper(helper);
                 amazonHelper.setParentAsin(parentAsin);
-                amazonHelper.setFbtNumber(i);
+                amazonHelper.setFbtNumber(fbtNumber);
 
                 if (StringUtils.isNotBlank(fbtLink)) {
                     WebRequestSettings settings = amazonHelper.createWebRequestSettings(fbtLink, pageUrl);

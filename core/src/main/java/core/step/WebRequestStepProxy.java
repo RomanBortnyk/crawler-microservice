@@ -38,15 +38,14 @@ public class WebRequestStepProxy extends AbstractParsingStep {
             return;
         }
 
+        webRequestStep.setDocument(createDocument(response));
+        webRequestStep.setSuccessfulRequestUrl(response.url().toString());
         webRequestStep.setResponseCode(response.statusCode());
 
         if (!webRequestStep.isValidResponse()) {
             webRequestStep.retry();
             return;
         }
-
-        webRequestStep.setSuccessfulRequestUrl(response.url().toString());
-        webRequestStep.setDocument(createDocument(response));
 
         // step logic
         webRequestStep.run();

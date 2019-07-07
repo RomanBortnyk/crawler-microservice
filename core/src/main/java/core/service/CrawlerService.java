@@ -1,6 +1,7 @@
 package core.service;
 
 import core.executor.StepsExecutor;
+import core.step.Step;
 import core.step.result.ExecutionResult;
 import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,6 @@ public class CrawlerService {
     private final CompletionService<ExecutionResult> stepsCompletionService;
 
     private AtomicBoolean ignoreStepsResults = new AtomicBoolean();
-//    private AtomicBoolean requestingSteps = new AtomicBoolean(false);
 
     public CrawlerService(StepsExecutor stepsExecutor,
                           StepsProvider stepsProvider) {
@@ -44,13 +44,9 @@ public class CrawlerService {
         stepsExecutor.shutdownNow();
     }
 
-    // 10 seconds
-//    @Scheduled(fixedRate = 10000)
     public int pollSteps() {
-//        requestingSteps.set(true);
-        List<Pair<Runnable, ExecutionResult>> nextSteps = stepsProvider.getSteps();
+        List<Pair<Step, ExecutionResult>> nextSteps = stepsProvider.getSteps();
         nextSteps.forEach(pair -> stepsCompletionService.submit(pair.getKey(), pair.getValue()));
-//        requestingSteps.set(false);
         return nextSteps.size();
     }
 

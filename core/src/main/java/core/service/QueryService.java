@@ -96,6 +96,7 @@ public class QueryService {
         persistenceService.persistResults(results);
 
         queryProvider.removeQueryFromQueue(query.getId());
+        stepsProvider.resetStepsContainers();
 
         cleanQuerySupportCollections(query);
     }

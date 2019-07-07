@@ -20,7 +20,7 @@ public class JsonPathWrapper {
     }
 
     public static JsonContext parse(String input) {
-        return (JsonContext) new JsonContext(CONFIGURATION).parse(input);
+        return (JsonContext) new JsonContext(CONFIGURATION).read(input);
     }
 
     public static DocumentContext read(DocumentContext context, String jsonPath) {

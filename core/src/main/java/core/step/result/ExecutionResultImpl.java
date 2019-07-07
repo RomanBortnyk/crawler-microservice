@@ -1,6 +1,5 @@
 package core.step.result;
 
-import core.Query;
 import core.step.Step;
 import lombok.Getter;
 
@@ -11,10 +10,10 @@ import java.util.List;
 public class ExecutionResultImpl implements ExecutionResult {
 
     private final List<Step> nextSteps;
-    private final Query query;
+    private final Step step;
 
-    public ExecutionResultImpl(Query query) {
-        this.query = query;
+    public ExecutionResultImpl(Step step) {
+        this.step = step;
         this.nextSteps = new ArrayList<>();
     }
 }
