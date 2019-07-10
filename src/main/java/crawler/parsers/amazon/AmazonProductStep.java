@@ -491,7 +491,7 @@ public class AmazonProductStep extends BaseStep {
 
                 if (StringUtils.isNotBlank(fbtLink)) {
                     WebRequestSettings settings = amazonHelper.createWebRequestSettings(fbtLink, pageUrl);
-                    addNextSteps(new AmazonRouterStep(settings, getQuery(), amazonHelper));
+                    addNextStep(new AmazonRouterStep(settings, getQuery(), amazonHelper));
                 } else {
                     log.warn("Fbt link is blank. Parent product: " + pageUrl);
                 }

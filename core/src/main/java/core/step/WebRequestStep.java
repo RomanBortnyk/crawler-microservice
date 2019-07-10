@@ -12,7 +12,6 @@ import org.jsoup.nodes.Document;
 @Slf4j
 public abstract class WebRequestStep extends AbstractParsingStep {
 
-    private static final int DEFAULT_RETRY_STEP_COUNT = 10;
     private static final int OK_RESPONSE_CODE = 200;
 
     @Getter
@@ -41,14 +40,6 @@ public abstract class WebRequestStep extends AbstractParsingStep {
 
     public boolean isValidResponse() {
         return responseCode == OK_RESPONSE_CODE;
-    }
-
-    public void retry() {
-        if (getTries() <= DEFAULT_RETRY_STEP_COUNT) {
-            WebRequestStep copy = this.copy();
-            copy.setTries(getTries() + 1);
-            addNextSteps(copy);
-        }
     }
 
     void setDocument(Document document) {

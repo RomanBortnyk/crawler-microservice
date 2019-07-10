@@ -25,7 +25,7 @@ public class SpringRouterStep extends WebRequestStep {
 
             SpringProjectsPage springProjectsPage = new SpringProjectsPage(getQuery(), document);
 
-            addNextSteps(springProjectsPage);
+            addNextStep(springProjectsPage);
 
         }
     }

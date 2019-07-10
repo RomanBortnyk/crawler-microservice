@@ -26,6 +26,6 @@ public class AmazonStartupStep extends BaseStep {
 
         WebRequestSettings settings = amazonHelper.createWebRequestSettings(url, "");
 
-        addNextSteps(new AmazonRouterStep(settings, getQuery(), amazonHelper));
+        addNextStep(new AmazonRouterStep(settings, getQuery(), amazonHelper));
     }
 }

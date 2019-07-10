@@ -28,7 +28,7 @@ public class SpringStartupStep extends BaseStep {
 
         SpringRouterStep springRouterStep = new SpringRouterStep(query, webRequestSettings);
 
-        addNextSteps(springRouterStep);
+        addNextStep(springRouterStep);
     }
 
 }

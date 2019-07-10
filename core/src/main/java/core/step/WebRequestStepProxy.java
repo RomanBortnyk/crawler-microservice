@@ -14,11 +14,12 @@ import java.io.IOException;
 @Slf4j
 public class WebRequestStepProxy extends AbstractParsingStep {
 
+    private static final int DEFAULT_RETRY_STEP_COUNT = 10;
     private static final int DEFAULT_CONNECTION_TIMEOUT = 20000;
     private final WebRequestStep webRequestStep;
 
     public WebRequestStepProxy(WebRequestStep webRequestStep) {
-        super(webRequestStep.getQuery());
+        super(webRequestStep.getId(), webRequestStep.getQuery());
         this.webRequestStep = webRequestStep;
     }
 
@@ -30,11 +31,11 @@ public class WebRequestStepProxy extends AbstractParsingStep {
     @Override
     public void run() {
 
-        // provide html document to web request step
+        // provides html document to web request step
         Connection.Response response = doWebRequest();
 
         if (response == null) {
-            webRequestStep.retry();
+            retry();
             return;
         }
 
@@ -43,12 +44,20 @@ public class WebRequestStepProxy extends AbstractParsingStep {
         webRequestStep.setResponseCode(response.statusCode());
 
         if (!webRequestStep.isValidResponse()) {
-            webRequestStep.retry();
+            retry();
             return;
         }
 
         // step logic
         webRequestStep.run();
+    }
+
+    private void retry() {
+        if (webRequestStep.getTries() <= DEFAULT_RETRY_STEP_COUNT) {
+            WebRequestStep copy = webRequestStep.copy();
+            copy.setTries(webRequestStep.getTries() + 1);
+            addNextStep(copy);
+        }
     }
 
     private Document createDocument(Connection.Response response) {

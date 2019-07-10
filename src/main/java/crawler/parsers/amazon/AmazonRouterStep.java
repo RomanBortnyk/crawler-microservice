@@ -49,13 +49,13 @@ public class AmazonRouterStep extends WebRequestStep {
         Document document = getDocument();
 
         if (AmazonProductStep.isResponsible(document)) {
-            addNextSteps(new AmazonProductStep(this));
+            addNextStep(new AmazonProductStep(this));
 
         } else if (AmazonNavigationStep.isResponsible(document)) {
-            addNextSteps(new AmazonNavigationStep(this));
+            addNextStep(new AmazonNavigationStep(this));
 
         } else if (AmazonNewNavigationStep.isResponsible(document)) {
-            addNextSteps(new AmazonNewNavigationStep(this));
+            addNextStep(new AmazonNewNavigationStep(this));
         }
     }
 
@@ -69,7 +69,6 @@ public class AmazonRouterStep extends WebRequestStep {
         Integer responseCode = getResponseCode();
 
         if (RETRY_ERROR_CODES.contains(responseCode)) {
-            retry();
             return false;
         }
 
@@ -77,12 +76,10 @@ public class AmazonRouterStep extends WebRequestStep {
 
         boolean isCaptchaPage = !document.select("form[action='/errors/validateCaptcha']").isEmpty();
         if (responseCode == 200 && isCaptchaPage) {
-            retry();
             return false;
         }
 
-        if (getTries() <= ALSO_BOUGHT_BLOCK_TRIES_LIMIT && isAlsoBoughtBlockRequestRepeatNeeded(document)) {
-            retry();
+        if (isAlsoBoughtBlockRequestRepeatNeeded(document) && getTries() <= ALSO_BOUGHT_BLOCK_TRIES_LIMIT) {
             return false;
         }
 

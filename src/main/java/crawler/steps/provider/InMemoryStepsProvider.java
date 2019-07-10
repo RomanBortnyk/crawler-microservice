@@ -1,6 +1,7 @@
 package crawler.steps.provider;
 
 import core.service.StepsProvider;
+import core.step.BaseStep;
 import core.step.Step;
 import core.step.result.ExecutionResult;
 import crawler.steps.status.StepStatus;
@@ -13,7 +14,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Component
 @Slf4j
@@ -31,7 +31,6 @@ public class InMemoryStepsProvider implements StepsProvider {
     private void initCollections() {
         stepsContainer.put(StepStatus.PENDING, new ArrayList<>());
         stepsContainer.put(StepStatus.RUNNING, new ArrayList<>());
-        stepsContainer.put(StepStatus.COMPLETED, new ArrayList<>());
     }
 
     @Override
@@ -46,17 +45,12 @@ public class InMemoryStepsProvider implements StepsProvider {
     public void completeStep(Step step) {
 
         synchronized (mutex) {
-            Optional<Pair<Step, ExecutionResult>> runningStepOptional = stepsContainer.get(StepStatus.RUNNING).stream()
+            List<Pair<Step, ExecutionResult>> runningSteps = stepsContainer.get(StepStatus.RUNNING);
+
+            runningSteps.stream()
                     .filter(p -> p.getKey().getId().equals(step.getId()))
-                    .findFirst();
-
-            if (runningStepOptional.isPresent()) {
-
-                Pair<Step, ExecutionResult> runningStep = runningStepOptional.get();
-                stepsContainer.get(StepStatus.COMPLETED).add(runningStep);
-                stepsContainer.get(StepStatus.RUNNING).remove(runningStep);
-            }
-
+                    .findFirst()
+                    .ifPresent(runningSteps::remove);
         }
 
 
@@ -76,14 +70,25 @@ public class InMemoryStepsProvider implements StepsProvider {
 
             List<Pair<Step, ExecutionResult>> stepsSendToExecutor = new ArrayList<>(pendingSteps);
 
-            List<Pair<Step, ExecutionResult>> runningSteps = stepsContainer.get(StepStatus.RUNNING);
-            runningSteps.addAll(stepsSendToExecutor);
-
+            stepsContainer.get(StepStatus.RUNNING).addAll(stepsSendToExecutor);
             pendingSteps.removeAll(stepsSendToExecutor);
+
+            stepsSendToExecutor.sort((p1, p2) -> {
+//                 sort steps in order that BaseStep steps are on the top of the list
+                // and will be placed in execution queue firstly
+                if (p1.getKey() instanceof BaseStep) {
+                    return -1;
+                }
+                if (p2.getKey() instanceof BaseStep) {
+                    return 1;
+                }
+                return 0;
+            });
 
             return stepsSendToExecutor;
         }
     }
+
 
     @Override
     public boolean anyStepsLeft() {

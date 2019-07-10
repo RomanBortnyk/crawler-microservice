@@ -1,10 +1,9 @@
 package core.executor;
 
-import core.PriorityStepComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,9 +20,13 @@ public class StepsExecutor extends ThreadPoolExecutor {
     private AtomicInteger runningStepsCount = new AtomicInteger(0);
 
     public StepsExecutor() {
+//        super(EFFECTIVE_NUMBER_OF_THREADS, EFFECTIVE_NUMBER_OF_THREADS, KEEP_ALIVE_TIME, TIME_UNIT,
+//                new PriorityBlockingQueue<>(INITIAL_QUEUE_CAPACITY, new PriorityStepComparator())
+//        );
+
         super(EFFECTIVE_NUMBER_OF_THREADS, EFFECTIVE_NUMBER_OF_THREADS, KEEP_ALIVE_TIME, TIME_UNIT,
-                new PriorityBlockingQueue<>(INITIAL_QUEUE_CAPACITY, new PriorityStepComparator())
-        );
+                new LinkedBlockingQueue<>());
+
     }
 
     private static int determineNumberOfThreads() {

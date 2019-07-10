@@ -4,10 +4,14 @@ import common.util.HtmlConstants;
 import core.WebRequestSettings;
 import core.model.BaseEntry;
 import core.step.BaseStep;
+import core.step.Step;
 import crawler.parsers.amazon.dto.Product;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static common.util.ParserUtil.extractFirstMatchElementAttribute;
 import static common.util.ParserUtil.extractFirstMatchElementText;
@@ -44,6 +48,8 @@ public class AmazonNewNavigationStep extends BaseStep {
             categoryLink = substringBeforeRefPath(pageUrl);
         }
 
+        List<Step> nextSteps = new ArrayList<>();
+
         for (Element productWrapper : document.select("li.zg-item-immersion")) {
 
             String productLink = extractProductLink(productWrapper);
@@ -73,7 +79,7 @@ public class AmazonNewNavigationStep extends BaseStep {
 
                 } else {
                     WebRequestSettings settings = amazonHelper.createWebRequestSettings(productLink, pageUrl);
-                    addNextSteps(new AmazonRouterStep(settings, getQuery(), amazonHelper));
+                    nextSteps.add(new AmazonRouterStep(settings, getQuery(), amazonHelper));
                 }
             }
         }
@@ -82,9 +88,11 @@ public class AmazonNewNavigationStep extends BaseStep {
 
             for (String nextCategoryLink : AmazonNavigationStep.extractNextCategoriesLinks(document, pageUrl, currentCategory)) {
                 WebRequestSettings settings = helper.createWebRequestSettings(nextCategoryLink, pageUrl);
-                addNextSteps(new AmazonRouterStep(settings, getQuery(), new AmazonHelper()));
+                nextSteps.add(new AmazonRouterStep(settings, getQuery(), new AmazonHelper()));
             }
         }
+
+        addNextSteps(nextSteps);
     }
 
     private String extractProductLink(Element element) {
