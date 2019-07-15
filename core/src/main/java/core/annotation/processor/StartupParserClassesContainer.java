@@ -14,6 +14,8 @@ public class StartupParserClassesContainer {
 
     private final Map<String, Class<?>> startupClasses;
 
+    // TODO throw exception if two identical names present
+
     public StartupParserClassesContainer(String parsersPackagePath) {
         startupClasses = new HashMap<>();
 

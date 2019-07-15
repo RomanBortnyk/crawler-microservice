@@ -1,4 +1,4 @@
-package crawler.steps.status;
+package crawler.step.status;
 
 public enum StepStatus {
     PENDING,

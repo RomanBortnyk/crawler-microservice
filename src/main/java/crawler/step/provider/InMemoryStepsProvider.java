@@ -1,13 +1,12 @@
-package crawler.steps.provider;
+package crawler.step.provider;
 
 import core.service.StepsProvider;
 import core.step.BaseStep;
 import core.step.Step;
 import core.step.result.ExecutionResult;
-import crawler.steps.status.StepStatus;
+import crawler.step.status.StepStatus;
 import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +14,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+//@Component
 @Slf4j
 public class InMemoryStepsProvider implements StepsProvider {
 
@@ -71,7 +70,7 @@ public class InMemoryStepsProvider implements StepsProvider {
             List<Pair<Step, ExecutionResult>> stepsSendToExecutor = new ArrayList<>(pendingSteps);
 
             stepsContainer.get(StepStatus.RUNNING).addAll(stepsSendToExecutor);
-            pendingSteps.removeAll(stepsSendToExecutor);
+            pendingSteps.clear();
 
             stepsSendToExecutor.sort((p1, p2) -> {
 //                 sort steps in order that BaseStep steps are on the top of the list
