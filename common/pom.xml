@@ -27,7 +27,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jsoup.version>1.9.1</jsoup.version>
+        <jsoup.version>1.14.2</jsoup.version>
         <!--<jayway.jsonpath.version>2.2.0</jayway.jsonpath.version>-->
         <commons-lang3.version>3.8.1</commons-lang3.version>
     </properties>
